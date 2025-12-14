@@ -31,12 +31,28 @@ const contractAbi = [
   }
 ];
 
-// При подключении к Mmask
+// При подключении к MetaMask
 if (window.ethereum) {
-  const provider = new ethers.providers.Web3Provider(window.ethereum); 
-  const signer = provider.getSigner();
-  const contract = new ethers.Contract(contractAddress, contractAbi, signer);
-
+  let contract;
+  
+  // Инициализация контракта после подключения
+  async function initializeContract() {
+    try {
+      // Запрашиваем подключение аккаунтов
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      
+      const provider = new ethers.providers.Web3Provider(window.ethereum); 
+      const signer = provider.getSigner();
+      contract = new ethers.Contract(contractAddress, contractAbi, signer);
+      
+      return true;
+    } catch (error) {
+      console.error("Ошибка инициализации:", error);
+      alert('Ошибка подключения к MetaMask');
+      return false;
+    }
+  }
+  
   document.getElementById('setMessageButton').onclick = async () => {
     const message = document.getElementById('messageInput').value;
     await contract.setMessage(message);
